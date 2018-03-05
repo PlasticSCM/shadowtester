@@ -10,6 +10,5 @@ namespace ShadowTesterLib.Storage
         {
             directory = Directory.CreateDirectory(path);
         }
-
     }
 }

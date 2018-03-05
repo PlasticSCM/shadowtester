@@ -2,8 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 
-using CommandLine;
-
 using ShadowTesterLib;
 using ShadowTesterLib.Recorder;
 using ShadowTesterLib.Storage;
@@ -15,17 +13,17 @@ namespace ShadowTester.Presentation.CommandLine
 {
     class Program
     {
-        private static StorageManager storageManager;
-        private static RecordConfiguration recordConfiguration;
-
         static void Main(string[] args)
         {
             if (args.Length == 0)
             {
-                string sessionName = "shadowtesting-session-" + DateTime.Now.ToString("yyyyMMdd-hhmm");
+                string sessionName =
+                    "shadowtesting-session-" + DateTime.Now.ToString("yyyyMMdd-hhmm");
 
                 string directory = Path.Combine(
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "shadowtesting"),
+                    Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+                        "shadowtesting"),
                     sessionName);
 
                 args = new string[] {
@@ -36,51 +34,16 @@ namespace ShadowTester.Presentation.CommandLine
                 };
             }
 
-            if (ConfigureApplication(args))
+            RecordConfiguration recordConfiguration;
+            if ((recordConfiguration = ConfigurationParser.ParseConfiguration(args)) == null)
             {
-                RunApplication();
+                Console.WriteLine(CommandLineOptions.HELP);
+                return;
             }
-        }
 
-        private static bool ConfigureApplication(string[] args)
-        {
-            CommandLineParser parser = new CommandLineParser();
-            CommandLineOptions options = new CommandLineOptions();
-            if(parser.ParseArguments(args, options))
-            {
-                recordConfiguration = CreateConfigFromOptions(options);
-                RecordValidator recordValidator = new RecordValidator();
-                try
-                {
-                    recordValidator.Validate(recordConfiguration);
-                }
-                catch(ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    return false;
-                }
-                storageManager = new StorageManager();
-                Factory.ProcessRecorder.Configure(recordConfiguration);
-                return true;
-            }
-            Console.WriteLine(options.GetHelp());
-            return false;
-        }
+            StorageManager storageManager = new StorageManager();
+            Factory.ProcessRecorder.Configure(recordConfiguration);
 
-        private static RecordConfiguration CreateConfigFromOptions(CommandLineOptions options)
-        {
-            RecordConfiguration configuration = new RecordConfiguration
-                                                    {
-                                                        Name = options.Name,
-                                                        CapturesPath = options.CapturesPath,
-                                                        Fps = options.Fps
-                                                    };
-            configuration.InitializeProcesses(options.processes);
-            return configuration;
-        }
-
-        private static void RunApplication()
-        {
             try
             {
                 storageManager.CreateCapturesDirectory(recordConfiguration.CapturesPath);
@@ -91,6 +54,17 @@ namespace ShadowTester.Presentation.CommandLine
                 return;
             }
 
+            if (!recordConfiguration.RunFromConsole)
+            {
+                WindowsTrayApp.Run(recordConfiguration);
+                return;
+            }
+
+            Run(recordConfiguration);
+        }
+
+        static void Run(RecordConfiguration recordConfiguration)
+        {
             Factory.ProcessRecorder.Start();
 
             Console.WriteLine("Recording on directory {0}...", recordConfiguration.CapturesPath);
@@ -109,34 +83,7 @@ namespace ShadowTester.Presentation.CommandLine
             Console.WriteLine("Press ENTER to quit");
             Console.ReadLine();
 
-            OpenFileWith("explorer.exe", recordConfiguration.CapturesPath, "/root,");
-        }
-
-        static void OpenFileWith(string exePath, string path, string arguments)
-        {
-            if (path == null)
-                return;
-
-            using (Process process = new Process())
-            {
-                process.StartInfo.WorkingDirectory = Path.GetDirectoryName(path);
-                if (exePath != null)
-                {
-                    process.StartInfo.FileName = exePath;
-                    //Pre-post insert quotes for fileNames with spaces.
-                    process.StartInfo.Arguments = string.Format("{0}\"{1}\"", arguments, path);
-                }
-                else
-                {
-                    process.StartInfo.FileName = path;
-                    process.StartInfo.WorkingDirectory = Path.GetDirectoryName(path);
-                }
-
-                if (!path.Equals(process.StartInfo.WorkingDirectory))
-                {
-                    process.Start();
-                }
-            }
+            Process.Start(recordConfiguration.CapturesPath);
         }
     }
 }

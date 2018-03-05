@@ -16,6 +16,7 @@ namespace ShadowTesterLib.System
         public SystemInfo GetSystemInformation()
         {
             ManagementHandler managementHandler = new ManagementHandler();
+            // FIXME: getting this information can throw an exception!
             return new SystemInfo()
             {
                 Processor = managementHandler.GetProcessor(),

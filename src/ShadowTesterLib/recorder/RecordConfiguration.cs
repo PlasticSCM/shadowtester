@@ -12,6 +12,8 @@ namespace ShadowTesterLib.Recorder
         public string CapturesPath { get; set; }
         public string Name { get; set; }
 
+        public bool RunFromConsole { get; set; }
+
         public IList<string> ExpectedProcesses
         {
             get
