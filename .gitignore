@@ -1,0 +1,8 @@
+*.suo
+/src/.vs
+**/bin/Debug/*
+**/bin/Release/*
+**/obj/Debug/*
+**/obj/Release/*
+**/x86/Debug/*
+**/x86/Release/*
