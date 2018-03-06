@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace ShadowTester.CommandLine
 {
@@ -10,6 +11,15 @@ namespace ShadowTester.CommandLine
         public const string STOP_RECORDING_ACTION = "4";
         private const string YES = "Y";
         private const string NO = "N";
+
+        public static void WriteLine(string value)
+        {
+            try
+            {
+                Console.WriteLine(value);
+            }
+            catch (IOException) { }
+        }
 
         public static string GetInputFromConsole()
         {

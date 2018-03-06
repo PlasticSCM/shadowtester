@@ -35,27 +35,13 @@ namespace ShadowTester
 
             mRecordConfiguration = recordConfiguration;
 
-            ToggleRecordingStatus();
+            StartRecording();
         }
 
-        void ToggleRecordingStatusMenuItem_OnClick(object sender, EventArgs e)
+        void FinishRecordingMenuItem_OnClick(object sender, EventArgs e)
         {
-            ToggleRecordingStatus();
-        }
-
-        void ExitMenuItem_OnClick(object sender, EventArgs e)
-        {
+            FinishRecording();
             Application.Exit();
-        }
-
-        void ToggleRecordingStatus()
-        {
-            if (mbIsRecording)
-                StopRecording();
-            else
-                StartRecording();
-
-            UpdateMenuItems();
         }
 
         void StartRecording()
@@ -72,7 +58,7 @@ namespace ShadowTester
             }
         }
 
-        void StopRecording()
+        void FinishRecording()
         {
             ConsoleCommand command = ConsoleCommandFactory.CreateCommand(
                 ConsoleHelper.STOP_RECORDING_ACTION, mRecordConfiguration);
@@ -80,15 +66,6 @@ namespace ShadowTester
             mbIsRecording = false;
 
             Process.Start(mRecordConfiguration.CapturesPath);
-        }
-
-        void UpdateMenuItems()
-        {
-            mToggleRecordingMenuItem.Text = mbIsRecording
-                ? "Finish recording"
-                : "Start recording";
-
-            mExitMenuItem.Enabled = !mbIsRecording;
         }
 
         void InitializeComponent()
@@ -102,13 +79,9 @@ namespace ShadowTester
         {
             mTrayMenu = new ContextMenu();
 
-            mToggleRecordingMenuItem = new MenuItem(
-                string.Empty, ToggleRecordingStatusMenuItem_OnClick);
-            mExitMenuItem = new MenuItem(
-                "Exit ShadowTester", ExitMenuItem_OnClick);
-
-            mTrayMenu.MenuItems.Add(mToggleRecordingMenuItem);
-            mTrayMenu.MenuItems.Add(mExitMenuItem);
+            mFinishRecordingMenuItem = new MenuItem(
+                "Finish recording", FinishRecordingMenuItem_OnClick);
+            mTrayMenu.MenuItems.Add(mFinishRecordingMenuItem);
 
             mTrayIcon = new NotifyIcon();
             mTrayIcon.Icon = Icon.ExtractAssociatedIcon(
@@ -137,8 +110,7 @@ namespace ShadowTester
         ContextMenu mTrayMenu;
         NotifyIcon mTrayIcon;
 
-        MenuItem mToggleRecordingMenuItem;
-        MenuItem mExitMenuItem;
+        MenuItem mFinishRecordingMenuItem;
         bool mbIsRecording = false;
 
         readonly RecordConfiguration mRecordConfiguration;

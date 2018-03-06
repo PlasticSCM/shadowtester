@@ -12,7 +12,10 @@ namespace ShadowTester.CommandLine.Commands
         private ProcessRecorder processRecorder;
         private RecordConfiguration configuration;
 
-        public StopRecordingCommand(ProcessRecorder processRecorder, VideoMaker videoMaker, RecordConfiguration configuration)
+        public StopRecordingCommand(
+            ProcessRecorder processRecorder,
+            VideoMaker videoMaker,
+            RecordConfiguration configuration)
         {
             this.processRecorder = processRecorder;
             this.videoMaker = videoMaker;
@@ -22,20 +25,20 @@ namespace ShadowTester.CommandLine.Commands
         public override void Execute()
         {
             processRecorder.Stop();
-            Console.WriteLine("Recording the video...");
+            ConsoleHelper.WriteLine("Recording the video...");
             try
             {
                 if (!File.Exists(configuration.CapturesPath + "/" + configuration.Name + ".avi") || ConsoleHelper.GetBooleanInputFromConsole())
                 {
                     if(videoMaker.FromImages(configuration.CapturesPath + "/" + configuration.Name + ".avi", configuration.CapturesPath, configuration.Fps))
                     {
-                        Console.WriteLine("The video was successfully created");
+                        ConsoleHelper.WriteLine("The video was successfully created");
                     }
                 }
             }
             catch (InvalidOperationException ex)
             {
-                Console.WriteLine(ex.Message);
+                ConsoleHelper.WriteLine(ex.Message);
             }
         }
     }
