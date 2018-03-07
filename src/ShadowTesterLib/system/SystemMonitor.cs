@@ -4,26 +4,23 @@ namespace ShadowTesterLib.System
     {
         public WindowData GetForegroundWindow()
         {
-            WindowHandler windowHandler = new WindowHandler();
             return new WindowData()
             {
-                Position = windowHandler.GetForegroundWindowPosition(),
-                Process = windowHandler.GetForegroundProcess(),
-                Size = windowHandler.GetForegroundWindowSize()
+                Position = WindowHandler.GetForegroundWindowPosition(),
+                Process = WindowHandler.GetForegroundProcess(),
+                Size = WindowHandler.GetForegroundWindowSize()
             };
         }
 
         public SystemInfo GetSystemInformation()
         {
-            ManagementHandler managementHandler = new ManagementHandler();
-            // FIXME: getting this information can throw an exception!
             return new SystemInfo()
             {
-                Processor = managementHandler.GetProcessor(),
-                HardDisk = managementHandler.GetHardDisk(),
-                Os = managementHandler.GetOs(),
-                Ram = managementHandler.GetRam(),
-                User = managementHandler.GetUser()
+                Processor = ManagementHandler.GetProcessor(),
+                HardDisk = ManagementHandler.GetHardDisk(),
+                Os = ManagementHandler.GetOs(),
+                Ram = ManagementHandler.GetRam(),
+                User = ManagementHandler.GetUser()
             };
         }
     }

@@ -7,60 +7,104 @@ using ShadowTesterLib.Util;
 
 namespace ShadowTesterLib.System
 {
-    public class ManagementHandler
+    public static class ManagementHandler
     {
-        private const string WIN32_PROCESSOR = "Win32_Processor";
-        private const string WIN32_DISKDRIVE = "Win32_DiskDrive";
-        private const string WIN32_OPERATIVESYSTEM = "Win32_OperatingSystem";
-        private const string WIN32_PHYSICALMEMORY = "Win32_PhysicalMemory";
-
-        public string GetUser()
+        public static string GetUser()
         {
             return WindowsIdentity.GetCurrent().Name;
         }
 
-        public string GetProcessor()
+        public static string GetProcessor()
         {
-            foreach (ManagementObject managementObject in GetManagementObjectCollection(WIN32_PROCESSOR))
+            ManagementObjectCollection.ManagementObjectEnumerator processors =
+                GetManagementObjectCollection(WIN32_PROCESSOR).GetEnumerator();
+
+            if (!processors.MoveNext())
+                return UNKNOWN;
+
+            return TryGetProcessor(processors.Current);
+        }
+
+        public static string GetHardDisk()
+        {
+            ManagementObjectCollection.ManagementObjectEnumerator diskDrives =
+                GetManagementObjectCollection(WIN32_DISKDRIVE).GetEnumerator();
+
+            if (!diskDrives.MoveNext())
+                return UNKNOWN;
+
+            return TryGetHardDisk(diskDrives.Current);
+        }
+
+        public static string GetOs()
+        {
+            foreach (ManagementObject managementObject in GetManagementObjectCollection(WIN32_OPERATINGSYSTEM))
             {
-                return managementObject.Properties["Name"].Value.ToString();
+                string[] osParts = managementObject
+                    .Properties["Name"]
+                    .Value
+                    .ToString()
+                    .Split(
+                        ("|").ToCharArray(),
+                        StringSplitOptions.RemoveEmptyEntries);
+
+                return osParts[0];
             }
+
             return String.Empty;
         }
 
-        private ManagementObjectCollection GetManagementObjectCollection(string queryObject)
-        {
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(string.Format("SELECT * FROM {0}", queryObject));
-            return searcher.Get();
-        }
-
-        public string GetHardDisk()
-        {
-            foreach (ManagementObject managementObject in GetManagementObjectCollection(WIN32_DISKDRIVE))
-            {
-                return DataStorageUnitHelper.BytesToGbs(long.Parse(managementObject.Properties["Size"].Value.ToString())) + " GB";
-            }
-            return String.Empty;
-        }
-
-        public string GetOs()
-        {
-            foreach (ManagementObject managementObject in GetManagementObjectCollection(WIN32_OPERATIVESYSTEM))
-            {
-                string[] osParts = managementObject.Properties["Name"].Value.ToString().Split(("|").ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                string os = osParts[0];
-                return os;
-            }
-            return String.Empty;
-        }
-
-        public string GetRam()
+        public static string GetRam()
         {
             long capacity = 
                 GetManagementObjectCollection(WIN32_PHYSICALMEMORY)
                     .Cast<ManagementObject>()
-                    .Sum(managementObject => long.Parse(managementObject.Properties["Capacity"].Value.ToString()));
+                    .Sum(managementObject =>
+                        long.Parse(
+                            managementObject.Properties["Capacity"].Value.ToString()));
+
             return DataStorageUnitHelper.BytesToGbs(capacity) + " GB";
         }
+
+        static string TryGetProcessor(ManagementBaseObject managementObject)
+        {
+            try
+            {
+                return managementObject.Properties["Name"].Value.ToString();
+            }
+            catch
+            {
+                return UNKNOWN;
+            }
+        }
+
+        static string TryGetHardDisk(ManagementBaseObject managementObject)
+        {
+            try
+            {
+                return DataStorageUnitHelper.BytesToGbs(
+                    long.Parse(
+                        managementObject.Properties["Size"].Value.ToString())) + " GB";
+            }
+            catch
+            {
+                return UNKNOWN;
+            }
+        }
+
+        static ManagementObjectCollection GetManagementObjectCollection(
+            string queryObject)
+        {
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(
+                string.Format("SELECT * FROM {0}", queryObject));
+            return searcher.Get();
+        }
+
+        const string UNKNOWN = "Unknown";
+
+        const string WIN32_PROCESSOR = "Win32_Processor";
+        const string WIN32_DISKDRIVE = "Win32_DiskDrive";
+        const string WIN32_OPERATINGSYSTEM = "Win32_OperatingSystem";
+        const string WIN32_PHYSICALMEMORY = "Win32_PhysicalMemory";
     }
 }

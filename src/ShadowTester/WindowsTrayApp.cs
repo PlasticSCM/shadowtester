@@ -46,16 +46,7 @@ namespace ShadowTester
 
         void StartRecording()
         {
-            try
-            {
-                Factory.ProcessRecorder.Start();
-                mbIsRecording = true;
-            }
-            catch (InvalidOperationException ex)
-            {
-                mbIsRecording = false;
-                return;
-            }
+            Factory.ProcessRecorder.Start();
         }
 
         void FinishRecording()
@@ -63,7 +54,6 @@ namespace ShadowTester
             ConsoleCommand command = ConsoleCommandFactory.CreateCommand(
                 ConsoleHelper.STOP_RECORDING_ACTION, mRecordConfiguration);
             command.Execute();
-            mbIsRecording = false;
 
             Process.Start(mRecordConfiguration.CapturesPath);
         }
@@ -111,7 +101,6 @@ namespace ShadowTester
         NotifyIcon mTrayIcon;
 
         MenuItem mFinishRecordingMenuItem;
-        bool mbIsRecording = false;
 
         readonly RecordConfiguration mRecordConfiguration;
     }

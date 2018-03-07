@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace ShadowTesterLib.System
 {
-    public class WindowHandler
+    public static class WindowHandler
     {
-        public string GetForegroundProcess()
+        public static string GetForegroundProcess()
         {
             uint processId;
             IntPtr hWnd = User32.GetForegroundWindow();
@@ -25,7 +25,7 @@ namespace ShadowTesterLib.System
             throw new ForegroundWindowNotFoundException();
         }
 
-        public Rectangle GetForegroundWindowRectangle()
+        public static Rectangle GetForegroundWindowRectangle()
         {
             IntPtr hWnd = User32.GetForegroundWindow();
             RECT rectangle = new RECT();
@@ -36,18 +36,18 @@ namespace ShadowTesterLib.System
             return Rectangle.FromLTRB(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
         }
 
-        public Size GetForegroundWindowSize()
+        public static Size GetForegroundWindowSize()
         {
             return GetForegroundWindowRectangle().Size;
         }
 
-        public Point GetForegroundWindowPosition()
+        public static Point GetForegroundWindowPosition()
         {
             Rectangle rectangle = GetForegroundWindowRectangle();
             return new Point(rectangle.Left, rectangle.Top);
         }
 
-        private class User32
+        class User32
         {
             [DllImport("user32.dll")]
             public static extern IntPtr GetForegroundWindow();
@@ -57,7 +57,7 @@ namespace ShadowTesterLib.System
             public static extern bool GetWindowRect(IntPtr hWnd, ref RECT rectangle);
         }
 
-        private struct RECT
+        struct RECT
         {
             public int Left;
             public int Top;
